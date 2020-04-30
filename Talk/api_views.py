@@ -14,7 +14,7 @@ class TalkView(View):
     ])
     @Auth.require_login
     def get(request):
-        talk = Talk.get_talk_by_username(**request.d.dict())
+        talk = Talk.get_talk_by_username(request.d.username)
         return talk.d()
 
     @staticmethod
@@ -27,6 +27,7 @@ class TalkView(View):
         is_success = False
         try:
             talk = Talk.create(**request.d.dict())
+            talk.talker.change_talked()
             is_success = True
         except Exception:
             is_success = False
@@ -68,7 +69,7 @@ class CommitView(View):
         is_success = False
         try:
             commit = Commit.create(**request.d.dict())
-
+            commit.talk.add_commit_number()
             is_success = True
         except Exception:
             is_success = False

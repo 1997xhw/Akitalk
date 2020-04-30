@@ -60,6 +60,17 @@ class Talk(models.Model):
             raise TalkError.CREATE_TALK
         return talks
 
+    @classmethod
+    def add_commit_number(cls):
+        cls.commit_number = cls.commit_number + 1
+
+    @classmethod
+    def reduce_commit_number(cls):
+        cls.commit_number = cls.commit_number - 1
+
+    def d(self):
+        return self.dictor('pk->tid', 'talk', 'username')
+
 
 class Commit(models.Model):
     """回复类"""
@@ -95,6 +106,8 @@ class Commit(models.Model):
             raise TalkError.CREATE_COMMIT
         return commits
 
+    def d(self):
+        return self.dictor('pk->cid', 'talk', 'username')
 
 class TalkP:
     talk = Talk.get_params('talk')

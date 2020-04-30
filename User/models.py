@@ -128,7 +128,7 @@ class User(models.Model):
                 :param password: 密码
                 :param invite_code: 邀请码
                 :return: Ret对象，错误返回错误代码，成功返回用户对象
-                """
+        """
         salt, hashed_password = User.hash_password(password)
         User.exist_with_username(username)
         # User.exist_with_invitecode(invite_code)
@@ -224,6 +224,11 @@ class User(models.Model):
         if hashed_password == user.password:
             return user
         raise UserError.PASSWORD
+
+    @classmethod
+    def change_talked(cls):
+        cls.talked = not cls.talked
+        cls.save()
 
     def is_beinviter(self, inviter):
         if self.username == inviter:
