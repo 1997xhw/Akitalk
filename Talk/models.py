@@ -17,11 +17,11 @@ class TalkError:
     NOT_BELONG = E("不是你的句子")
 
 
-
-
 class Talk(models.Model):
     """主题类"""
     talk = models.TextField(
+        default="",
+        null=True,
     )
     talker = models.ForeignKey(
         'User.User',
@@ -69,7 +69,7 @@ class Talk(models.Model):
         cls.commit_number = cls.commit_number - 1
 
     def d(self):
-        return self.dictor('pk->tid', 'talk', 'username')
+        return self.dictor('pk->tid', 'talk', 'commit_number', 'talker')
 
 
 class Commit(models.Model):
@@ -98,7 +98,7 @@ class Commit(models.Model):
             commits = cls(
                 commit=commit,
                 commiter=User.objects.get(username=username),
-                talk=Talk.objects.get(id=tid),
+                talk=Talk.objects.get(pk=tid),
             )
             commits.save()
 
@@ -106,8 +106,23 @@ class Commit(models.Model):
             raise TalkError.CREATE_COMMIT
         return commits
 
+    @classmethod
+    def get_commit(cls, tid, page, count):
+        try:
+            talk = Talk.objects.get(pk=tid)
+            commits = Commit.objects.filter(talk=talk)
+            if page >= 0 and count > 0:
+                start = page * count
+                end = start + count
+                commits = commits[start: end]
+
+        except:
+            pass
+        return commits
+
     def d(self):
-        return self.dictor('pk->cid', 'talk', 'username')
+        return self.dictor('pk->cid', 'commit', 'time', 'commiter', 'talk')
+
 
 class TalkP:
     talk = Talk.get_params('talk')

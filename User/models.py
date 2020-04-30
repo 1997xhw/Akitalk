@@ -3,6 +3,7 @@ import string
 from SmartDjango import models, E
 from django.utils.crypto import get_random_string
 
+
 @E.register()
 class UserError:
     PASSWORD_CHANGED = E("密码已改变，需要重新获取token")
@@ -167,7 +168,7 @@ class User(models.Model):
                 username=username,
                 password=hashed_password,
                 salt=salt,
-                invite_code=username+'666',
+                invite_code=username + '666',
             )
             user.save()
         except Exception:
@@ -227,7 +228,8 @@ class User(models.Model):
 
     @classmethod
     def change_talked(cls):
-        cls.talked = not cls.talked
+        cls.talked = not (cls.talked)
+        print(cls.talked)
         cls.save()
 
     def is_beinviter(self, inviter):
@@ -242,7 +244,6 @@ class User(models.Model):
             else:
                 return False
 
-
     def d(self):
         return self.dictor('pk->uid', 'username', 'inviter')
 
@@ -252,6 +253,7 @@ class User(models.Model):
     def _readable_inviter(self):
         if self.inviter:
             return self.inviter.d_base()
+
     def d_base(self):
         return self.dictor('pk->id', 'username')
 
