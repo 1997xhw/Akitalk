@@ -25,6 +25,7 @@ class UserView(View):
 
         创建用户
         """
+        print(1111)
         invite_code = request.d.invite_code
         if invite_code is not None:
             # print(invite_code)

@@ -57,6 +57,7 @@ class User(models.Model):
         null=True,
     )
     talked = models.BooleanField(
+        # 是否发了talk
         default=False,
         null=True,
     )
@@ -138,9 +139,9 @@ class User(models.Model):
             user = cls(
                 username=username,
                 password=hashed_password,
+                invite_code=username + '666',
                 salt=salt,
                 inviter=inviter,
-                invite_code=username + "666"
             )
             user.save()
         except Exception:
@@ -166,6 +167,7 @@ class User(models.Model):
                 username=username,
                 password=hashed_password,
                 salt=salt,
+                invite_code=username+'666',
             )
             user.save()
         except Exception:
