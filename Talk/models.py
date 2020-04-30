@@ -90,6 +90,7 @@ class Commit(models.Model):
                 talk=Talk.objects.get(id=tid),
             )
             commits.save()
+
         except Exception as err:
             raise TalkError.CREATE_COMMIT
         return commits
