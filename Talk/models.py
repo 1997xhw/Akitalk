@@ -111,6 +111,13 @@ class Commit(models.Model):
 
     @classmethod
     def create(cls, commit, tid, user):
+        """
+
+        :param commit: commit内容
+        :param tid: commit的主题talk
+        :param user: commit主人
+        :return:
+        """
         try:
             commits = cls(
                 commit=commit,

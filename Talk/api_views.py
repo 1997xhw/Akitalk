@@ -53,34 +53,34 @@ class CommitView(View):
         """
         return Commit.create(request.d.commit, request.d.tid, request.user).d()
 
-    @staticmethod
-    @Analyse.r(b=[
-        P('tid', 'talkid').process(int),
-        P('last', '最后一条commit的时间').default(0).process(last_timer),
-        P('count', '每页数目').default(0).process(int)
-    ])
-    @Auth.require_login
-    def get(request):
-        """GET /api/commit
-        获取评论
-        """
-        return Commit.get_commit(**request.d.dict('tid', 'last', 'count'))
-
+    # @staticmethod
+    # @Analyse.r(b=[
+    #     P('tid', 'talkid').process(int),
+    #     P('last', '最后一条commit的时间').default(0).process(last_timer),
+    #     P('count', '每页数目').default(5).process(int)
+    # ])
+    # @Auth.require_login
+    # def get(request):
+    #     """GET /api/commit
+    #     获取评论
+    #     """
+    #     return Commit.get_commit(**request.d.dict('tid', 'last', 'count'))
 
 
 class TalkContentView(View):
     @staticmethod
-    @Analyse.r(b=[P('tid', 'talkid').process(int), P('page', '页码').default(0).process(int),
-                  P('count', '每页数目').default(0).process(int)])
+    @Analyse.r(a=[P('tid', 'talkid').process(int)],
+               b=[P('last', '最后一条commit的时间').default(0, through_processors=True).process(last_timer),
+                  P('count', '每页数目').default(5).process(int)])
     @Auth.require_login
-    def get(request):
+    def post(request):
         """
 
         获取此talk的内容及commit
         """
-        talk = Talk.objects.get(pk=request.d.tid)
-        commits = Commit.get_commit(**request.d.dict('tid', 'page', 'count'))
+        print(request.d.count)
+        print(request.d.last)
         return dict(
-            talk=talk.d(),
-            commits=commits.d(),
+            talk=Talk.objects.get(pk=request.d.tid).d(),
+            commits=Commit.get_commit(**request.d.dict('tid', 'last', 'count')),
         )
