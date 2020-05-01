@@ -22,8 +22,8 @@ class TalkView(View):
 
     @staticmethod
     @Analyse.r(b=[
-        # TalkP.talk,
-        P('talk', 'talk')
+        TalkP.talk,
+        # P('talk', 'talk')
     ])
     @Auth.require_login
     def post(request):
@@ -33,16 +33,12 @@ class TalkView(View):
             print(request.user.username)
             talk = Talk.create(request.d.talk, request.user.username)
             talker = talk.talker
-            # print(talker.talked)
             talker.change_talked()
-            # print(talker.talked)
             is_success = True
         except Exception:
             raise TalkError.CREAT_TALK
-        return dict(
-            is_success=is_success,
-            talk=talk.d()
-        )
+        return talk.d()
+
 
     @staticmethod
     @Analyse.r(b=[
@@ -119,6 +115,6 @@ class TalkContentView(View):
         talk = Talk.objects.get(pk=request.d.tid)
         commits = Commit.get_commit(**request.d.dict('tid', 'page', 'count'))
         return dict(
-            talk=talk,
-            commits=commits,
+            talk=talk.d(),
+            commits=commits.d(),
         )

@@ -1,5 +1,6 @@
-from django.db import models
 
+from django.db import models
+from django.utils import timezone
 # Create your models here.
 from User.models import User
 from SmartDjango import models, E
@@ -30,7 +31,7 @@ class Talk(models.Model):
         null=True,
     )
     time = models.DateTimeField(
-        auto_now=False,
+        # auto_now=False,
         null=True,
     )
     commit_number = models.IntegerField(
@@ -52,6 +53,7 @@ class Talk(models.Model):
         try:
             talks = cls(
                 talk=talk,
+                time=timezone.now(),
                 commit_number=0,
                 talker=User.get_user_by_username(username),
             )
@@ -60,17 +62,20 @@ class Talk(models.Model):
             raise TalkError.CREATE_TALK
         return talks
 
-    @classmethod
-    def add_commit_number(cls):
-        cls.commit_number = cls.commit_number + 1
+    def add_commit_number(self):
+        self.commit_number = self.commit_number + 1
 
-    @classmethod
-    def reduce_commit_number(cls):
-        cls.commit_number = cls.commit_number - 1
+    def reduce_commit_number(self):
+        self.commit_number = self.commit_number - 1
 
     def d(self):
-        return self.dictor('pk->tid', 'talk', 'commit_number', 'talker')
+        return self.dictor('pk->tid', 'talk', 'time', 'commit_number', 'talker')
 
+    def _readable_time(self):
+        return self.time.timestamp()
+
+    def _readable_talker(self):
+        return self.talker.d()
 
 class Commit(models.Model):
     """回复类"""
@@ -123,10 +128,19 @@ class Commit(models.Model):
     def d(self):
         return self.dictor('pk->cid', 'commit', 'time', 'commiter', 'talk')
 
+    def _readable_commiter(self):
+        if self.commiter:
+            return self.commiter.d()
+
+    def _readable_time(self):
+        return self.time.timestamp()
+
+    def _readable_talk(self):
+        return self.talk.d()
 
 class TalkP:
-    talk = Talk.get_params('talk')
+    talk, = Talk.get_params('talk')
 
 
 class CommitP:
-    commit = Commit.get_params('commit')
+    commit, = Commit.get_params('commit')

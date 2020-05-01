@@ -226,11 +226,10 @@ class User(models.Model):
             return user
         raise UserError.PASSWORD
 
-    @classmethod
-    def change_talked(cls):
-        cls.talked = not (cls.talked)
-        print(cls.talked)
-        cls.save()
+    def change_talked(self):
+        print(bool(1 - self.talked))
+        self.talked = bool(1 - self.talked)
+        self.save()
 
     def is_beinviter(self, inviter):
         if self.username == inviter:
