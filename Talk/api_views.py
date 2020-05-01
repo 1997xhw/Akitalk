@@ -82,5 +82,5 @@ class TalkContentView(View):
         print(request.d.last)
         return dict(
             talk=Talk.objects.get(pk=request.d.tid).d(),
-            commits=Commit.get_commit(**request.d.dict('tid', 'last', 'count')),
+            commits=Commit.get_commit(**request.d.dict()),
         )
