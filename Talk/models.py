@@ -1,7 +1,9 @@
+import datetime
 
 from django.db import models
 from django.utils import timezone
 # Create your models here.
+from Base.pager import time_d_pager
 from User.models import User
 from SmartDjango import models, E
 from smartify import P
@@ -10,7 +12,9 @@ from smartify import P
 @E.register()
 class TalkError:
     CREATE_TALK = E("创建Talk错误")
+    EXISTING_TALK = E("存在未删除Talk")
     CREATE_COMMIT = E("创建Commit错误")
+    GET_COMMIT = E("获取Commit异常")
     NO_MATCHED_SENTENCE = E("找不到匹配的句子")
     NOT_FOUND_SENTENCE = E("不存在的句子")
     NOT_FOUND_TAG = E("不存在的标签")
@@ -49,21 +53,28 @@ class Talk(models.Model):
         return talk
 
     @classmethod
-    def create(cls, talk, username):
+    def create(cls, talk, user):
+        if user.talked:
+            raise TalkError.EXISTING_TALK
         try:
             talks = cls(
                 talk=talk,
-                time=timezone.now(),
+                time=datetime.datetime.now(),
                 commit_number=0,
-                talker=User.get_user_by_username(username),
+                talker=user,
             )
             talks.save()
+            talks.talker.change_talked()
         except Exception as err:
             raise TalkError.CREATE_TALK
         return talks
 
+    def delete_talk(self, user):
+        Talk.objects.get(talker=user).delete()
+
     def add_commit_number(self):
         self.commit_number = self.commit_number + 1
+        self.save()
 
     def reduce_commit_number(self):
         self.commit_number = self.commit_number - 1
@@ -76,6 +87,7 @@ class Talk(models.Model):
 
     def _readable_talker(self):
         return self.talker.d()
+
 
 class Commit(models.Model):
     """回复类"""
@@ -98,32 +110,41 @@ class Commit(models.Model):
     )
 
     @classmethod
-    def create(cls, commit, tid, username):
+    def create(cls, commit, tid, user):
         try:
             commits = cls(
                 commit=commit,
-                commiter=User.objects.get(username=username),
+                commiter=user,
+                time=datetime.datetime.now(),
                 talk=Talk.objects.get(pk=tid),
             )
             commits.save()
+            commits.talk.add_commit_number()
 
-        except Exception as err:
+        except Exception:
             raise TalkError.CREATE_COMMIT
         return commits
 
     @classmethod
-    def get_commit(cls, tid, page, count):
+    def get_commit(cls, tid, last, count):
+        """
+
+        :param tid: talk的id
+        :param last: 当前页最后一条的时间（pager比last时间小的第一条commit开始）
+        :param count: 要获取的commit条数
+        :return:
+        """
         try:
             talk = Talk.objects.get(pk=tid)
             commits = Commit.objects.filter(talk=talk)
-            if page >= 0 and count > 0:
-                start = page * count
-                end = start + count
-                commits = commits[start: end]
-
-        except:
-            pass
-        return commits
+            page = commits.page(time_d_pager, last, count)
+            # if page >= 0 and count > 0:
+            #     start = page * count
+            #     end = start + count
+            #     commits = commits[start: end]
+        except Exception:
+            raise TalkError.GET_COMMIT
+        return page.dict(object_dictor=Commit.d, next_dictor=cls.time_dictor)
 
     def d(self):
         return self.dictor('pk->cid', 'commit', 'time', 'commiter', 'talk')
@@ -137,6 +158,12 @@ class Commit(models.Model):
 
     def _readable_talk(self):
         return self.talk.d()
+
+    def time_dictor(v):
+        if isinstance(v, datetime.datetime):
+            return v.timestamp()
+        return v
+
 
 class TalkP:
     talk, = Talk.get_params('talk')
