@@ -140,7 +140,7 @@ class Commit(models.Model):
         return commits
 
     @classmethod
-    def get_commit(cls, tid, last, count):
+    def get_commit(cls, talk, last, count):
         """
 
         :param tid: talk的id
@@ -149,7 +149,6 @@ class Commit(models.Model):
         :return:
         """
         try:
-            talk = Talk.objects.get(pk=tid)
             commits = Commit.objects.filter(talk=talk)
             page = commits.page(time_d_pager, last, count)
             # if page >= 0 and count > 0:
