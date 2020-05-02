@@ -51,7 +51,7 @@ class CommitView(View):
 
 class TalkContentView(View):
     @staticmethod
-    @Analyse.r(a=[P('tid', 'talkid').process(int)],
+    @Analyse.r(a=[P('tid', 'talkid', 'talk').process(int).process(Talk.get_talk_by_pk)],
                b=[P('last', '最后一条commit的时间').default(0, through_processors=True).process(last_timer),
                   P('count', '每页数目').default(5).process(int)])
     @Auth.require_login
@@ -61,6 +61,6 @@ class TalkContentView(View):
         获取此talk的内容及commit
         """
         return dict(
-            talk=Talk.get_talk_by_pk(request.d.tid).d(),
+            talk=request.d.talk.d(),
             commits=Commit.get_commit(**request.d.dict()),
         )
