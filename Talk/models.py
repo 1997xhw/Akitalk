@@ -15,6 +15,7 @@ class TalkError:
     EXISTING_TALK = E("存在未删除Talk")
     CREATE_COMMIT = E("创建Commit错误")
     GET_COMMIT = E("获取Commit异常")
+    GET_Talk = E("获取Talk异常")
     NO_MATCHED_SENTENCE = E("找不到匹配的句子")
     NOT_FOUND_SENTENCE = E("不存在的句子")
     NOT_FOUND_TAG = E("不存在的标签")
@@ -69,7 +70,13 @@ class Talk(models.Model):
             raise TalkError.CREATE_TALK
         return talks
 
-    def delete_talk(self, user):
+    def get_talk_by_pk(tid):
+        try:
+            return Talk.objects.get(pk=tid)
+        except:
+            raise TalkError.GET_Talk
+
+    def delete_talk(user):
         Talk.objects.get(talker=user).delete()
 
     def add_commit_number(self):
