@@ -3,7 +3,7 @@ import datetime
 from django.db import models
 from django.utils import timezone
 # Create your models here.
-from Base.pager import time_d_pager
+from Base.pager import time_d_pager, time_dictor
 from User.models import User
 from SmartDjango import models, E
 from smartify import P
@@ -151,13 +151,10 @@ class Commit(models.Model):
         try:
             commits = Commit.objects.filter(talk=talk)
             page = commits.page(time_d_pager, last, count)
-            # if page >= 0 and count > 0:
-            #     start = page * count
-            #     end = start + count
-            #     commits = commits[start: end]
+
         except Exception:
             raise TalkError.GET_COMMIT
-        return page.dict(object_dictor=Commit.d, next_dictor=cls.time_dictor)
+        return page.dict(object_dictor=Commit.d, next_dictor=time_dictor)
 
     def d(self):
         return self.dictor('pk->cid', 'commit', 'time', 'commiter', 'talk')
@@ -172,10 +169,6 @@ class Commit(models.Model):
     def _readable_talk(self):
         return self.talk.d()
 
-    def time_dictor(v):
-        if isinstance(v, datetime.datetime):
-            return v.timestamp()
-        return v
 
 
 class TalkP:

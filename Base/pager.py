@@ -12,3 +12,9 @@ def last_timer(last):
         return datetime.datetime.now()
     else:
         return datetime.datetime.fromtimestamp(last)
+
+
+def time_dictor(v):
+    if isinstance(v, datetime.datetime):
+        return v.timestamp()
+    return v
